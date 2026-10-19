@@ -1,0 +1,17 @@
+line-length = 130
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "BLE", "RUF"]
+# Compact one-line statements are fine in the small ML scripts.
+ignore = ["E702"]
+
+[lint.flake8-bugbear]
+# FastAPI's dependency-injection idiom is not a bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+[lint.per-file-ignores]
+# These files must set an env var / matplotlib backend before importing other modules.
+"backend/tests/conftest.py" = ["E402"]
+"ml/*.py" = ["E402"]
+"scripts/*.py" = ["E501"]  # dense data tables
