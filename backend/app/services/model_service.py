@@ -16,10 +16,11 @@ class ModelService:
         self.metrics: dict = {}
         self.importance: dict = {}
         self.summary: dict | None = None
+        self.reference: dict | None = None
         self.error: str | None = None
 
     def load(self) -> None:
-        self.pipeline, self.card, self.metrics, self.importance, self.summary = None, {}, {}, {}, None
+        self.pipeline, self.card, self.metrics, self.importance, self.summary, self.reference = None, {}, {}, {}, None, None
         path = Path(settings.artifacts_dir)
         if not path.is_absolute():
             path = ROOT / path
@@ -42,6 +43,8 @@ class ModelService:
             self.importance = json.loads((path / "feature_importance.json").read_text())
             summary_file = path / "data_summary.json"  # optional; older artifact sets may not have it
             self.summary = json.loads(summary_file.read_text()) if summary_file.exists() else None
+            ref_file = path / "reference_profile.json"  # optional; needed only for result explanations
+            self.reference = json.loads(ref_file.read_text()) if ref_file.exists() else None
             self.error = None
         except Exception as exc:  # noqa: BLE001 - any load failure must degrade to a 503 state
             self.pipeline = None
@@ -61,3 +64,15 @@ def require_model() -> ModelService:
     if not model_service.loaded:
         raise ApiError(503, "model_unavailable", model_service.error or "Model unavailable.")
     return model_service
+
+
+def require_reference() -> ModelService:
+    from app.core.errors import ApiError
+
+    svc = require_model()
+    if not svc.reference:
+        raise ApiError(
+            503, "reference_unavailable",
+            "Explanations need one extra file. Run: python -m ml.summarize (or .\\scripts\\train.ps1), then restart the backend.",
+        )
+    return svc

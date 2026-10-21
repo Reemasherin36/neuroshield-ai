@@ -1,21 +1,13 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { HEALTH_OK, ME, METADATA, METRICS, assessment, renderAt } from '../test/fixtures'
+import { EXPLAIN_ROUTE, HEALTH_OK, ME, METADATA, METRICS, assessment, renderAt } from '../test/fixtures'
 import { mockFetch } from '../test/mockApi'
 
 const page = (items: ReturnType<typeof assessment>[], total = items.length, limit = 10) => ({
   status: 200,
   body: { items, total, limit, offset: 0 },
 })
-const FI = {
-  status: 200,
-  body: {
-    method: 'permutation importance on validation set',
-    importances: [{ feature: 'age', mean: 0.19, std: 0.01 }],
-    limitations: ['It is not causal and does not show what matters medically.'],
-  },
-}
 const NOT_TRAINED = {
   status: 503,
   body: { error: { code: 'model_unavailable', message: 'Model not trained yet.', details: null } },
@@ -33,10 +25,14 @@ describe('dashboard', () => {
       ),
     })
     renderAt('/dashboard')
-    expect(await screen.findByText('Lower:')).toBeInTheDocument()
-    const dist = screen.getByRole('region', { name: /by band/i })
-    expect(within(dist).getByText(/lower:/i).parentElement).toHaveTextContent('Lower: 2')
-    expect(within(dist).getByText(/higher:/i).parentElement).toHaveTextContent('Higher: 1')
+    expect(await screen.findByText(/lower stroke risk:/i)).toBeInTheDocument()
+    const dist = screen.getByRole('region', { name: /your saved results/i })
+    expect(within(dist).getByText(/lower stroke risk:/i).parentElement).toHaveTextContent(
+      'Lower stroke risk: 2',
+    )
+    expect(within(dist).getByText(/higher stroke risk:/i).parentElement).toHaveTextContent(
+      'Higher stroke risk: 1',
+    )
     expect(screen.getByText('Saved assessments').nextElementSibling).toHaveTextContent('3')
   })
 
@@ -48,7 +44,7 @@ describe('dashboard', () => {
     })
     renderAt('/dashboard')
     expect(await screen.findByText(/no saved assessments yet/i)).toBeInTheDocument()
-    expect(screen.queryByText(/by band/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/your saved results/i)).not.toBeInTheDocument()
   })
 
   it('tells the user when the model is not trained', async () => {
@@ -79,13 +75,11 @@ describe('history', () => {
     })
     renderAt('/history')
     const u = userEvent.setup()
-    expect(await screen.findByText(/higher than typical in the training data/i)).toBeInTheDocument()
+    expect(await screen.findByText(/higher stroke risk/i)).toBeInTheDocument()
     await u.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
     expect(calls.some((c) => c.key === 'DELETE /assessments/2')).toBe(false) // first click only asks
     await u.click(screen.getByRole('button', { name: /confirm delete/i }))
-    await waitFor(() =>
-      expect(screen.queryByText(/higher than typical in the training data/i)).not.toBeInTheDocument(),
-    )
+    await waitFor(() => expect(screen.queryByText(/higher stroke risk/i)).not.toBeInTheDocument())
     expect(calls.some((c) => c.key === 'DELETE /assessments/2')).toBe(true)
   })
 
@@ -117,12 +111,11 @@ describe('history', () => {
     mockFetch({
       'GET /users/me': ME,
       'GET /assessments/4': { status: 200, body: assessment(4, 'moderate') },
+      'POST /predictions/explain': EXPLAIN_ROUTE,
       'GET /model/metrics': { status: 200, body: { ...METRICS, probability_display_supported: false } },
     })
     renderAt('/history/4')
-    expect(
-      await screen.findByRole('heading', { name: /moderate compared with the training data/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Lower stroke risk' })).toBeInTheDocument()
     expect(screen.queryByText(/approximate model output/i)).not.toBeInTheDocument()
     expect(screen.getByText(/this result was saved to your history/i)).toBeInTheDocument()
   })
@@ -208,9 +201,7 @@ describe('settings', () => {
     await waitFor(() =>
       expect(calls.find((c) => c.key === 'DELETE /users/me')?.body).toEqual({ password: 'my-password-123' }),
     )
-    expect(
-      await screen.findByRole('heading', { level: 1, name: /explore stroke risk factors/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /higher or lower/i })).toBeInTheDocument()
   })
 
   it('deletes all saved assessments only after confirmation', async () => {
@@ -224,32 +215,58 @@ describe('settings', () => {
   })
 })
 
-describe('analytics', () => {
-  it('shows real metrics, the confusion matrix and the feature-importance limitations', async () => {
+describe('analytics (personal risk analysis)', () => {
+  it('shows the verdict, the percentage and which answers drive it, from the latest saved assessment', async () => {
     mockFetch({
       'GET /users/me': ME,
-      'GET /model/metrics': { status: 200, body: METRICS },
-      'GET /model/feature-importance': FI,
+      'GET /assessments?limit=1&offset=0': page([assessment(3, 'higher')], 1, 1),
+      'POST /predictions/explain': EXPLAIN_ROUTE,
     })
     renderAt('/analytics')
-    expect(await screen.findByRole('heading', { name: /model analytics/i })).toBeInTheDocument()
-    const cm = screen.getByRole('table', { name: /confusion matrix/i })
-    expect(within(cm).getByText('682')).toBeInTheDocument()
-    expect(within(cm).getByText('41')).toBeInTheDocument()
-    expect(screen.getByText('82.0%')).toBeInTheDocument()
-    expect(screen.getByText(/says nothing about any one person/i)).toBeInTheDocument()
-    expect(screen.getByText(/not causal/i)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /your risk analysis/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Higher stroke risk' })).toBeInTheDocument()
+    expect(screen.getByText(/estimated stroke risk:/i)).toHaveTextContent('13%')
+    const up = await screen.findByRole('heading', { name: /pushing your estimate up/i })
+    expect(within(up.nextElementSibling as HTMLElement).getAllByRole('listitem')[0]).toHaveTextContent(
+      /age.*\+11\.2 points/i,
+    )
+    expect(screen.getByRole('link', { name: /open the full result/i })).toHaveAttribute('href', '/history/3')
   })
 
-  it('shows the not-trained state instead of charts', async () => {
+  it('shows no model-quality plots or numbers', async () => {
     mockFetch({
       'GET /users/me': ME,
-      'GET /model/metrics': NOT_TRAINED,
-      'GET /model/feature-importance': NOT_TRAINED,
+      'GET /assessments?limit=1&offset=0': page([assessment(3, 'lower')], 1, 1),
+      'POST /predictions/explain': EXPLAIN_ROUTE,
     })
     renderAt('/analytics')
-    expect(await screen.findByRole('heading', { name: /model not trained yet/i })).toBeInTheDocument()
-    expect(screen.queryByText(/roc curve/i)).not.toBeInTheDocument()
+    await screen.findByRole('heading', { name: /pushing your estimate up/i })
+    expect(document.body.textContent).not.toMatch(
+      /ROC|PR-AUC|precision|recall|confusion matrix|calibration|Brier/i,
+    )
+  })
+
+  it('asks the user to complete an assessment when none is saved', async () => {
+    mockFetch({ 'GET /users/me': ME, 'GET /assessments?limit=1&offset=0': page([], 0, 1) })
+    renderAt('/analytics')
+    expect(await screen.findByText(/no analysis yet/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /start new assessment/i })).toHaveAttribute('href', '/assess')
+  })
+
+  it('still shows the saved verdict when the breakdown is unavailable', async () => {
+    mockFetch({
+      'GET /users/me': ME,
+      'GET /assessments?limit=1&offset=0': page([assessment(3, 'higher')], 1, 1),
+      'POST /predictions/explain': {
+        status: 503,
+        body: {
+          error: { code: 'reference_unavailable', message: 'Run: python -m ml.summarize', details: null },
+        },
+      },
+    })
+    renderAt('/analytics')
+    expect(await screen.findByText(/python -m ml\.summarize/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Higher stroke risk' })).toBeInTheDocument()
   })
 })
 

@@ -27,7 +27,14 @@ Chrome or Edge: press F12, then the device toolbar (Ctrl+Shift+M), and set the w
 ## 5. Performance
 - [ ] Lighthouse Performance on Landing (production build: `npm run build` then `npm run preview`). Note the scores. None are claimed here.
 
-## 6. Content and safety review
+## 6. The result and analysis pages (new)
+- [ ] After an assessment the page starts with a large "Higher stroke risk" or "Lower stroke risk" headline and an "Estimated stroke risk: x%" line, then the two-state scale with the marker on the right side.
+- [ ] The factor chart is readable at 375 px: labels are not cut off, bars point right (up) or left (down), and the lists below match the bars.
+- [ ] Try three profiles: an older person with high glucose (expect higher), a young person with healthy values (expect lower and "under 0.1%" or a small percent), and one with BMI over 30 (expect the "do not read it as protective" note if BMI appears under "pushing down").
+- [ ] Analytics shows the same verdict and chart for your latest saved assessment, and an empty state if you have none.
+- [ ] No page shows ROC, precision, recall, confusion matrix or "model transparency" wording to a user (only the Methodology page keeps technical detail).
+
+## 7. Content and safety review
 - [ ] Every result page (try all three bands) shows the emergency warning, the "not a diagnosis" statement, and advice to see a professional, and never says you are safe.
 - [ ] No page shows testimonials, user counts, ratings, logos, awards, or compliance badges.
 - [ ] Stop the backend and reload Landing, Dashboard and Assessment: each shows a clear message instead of fake data.

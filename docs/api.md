@@ -14,6 +14,7 @@ Run the backend and open `/docs` for the interactive version (disabled when `APP
 | DELETE | `/api/v1/users/me` | Delete Account | cookie required |
 | PATCH | `/api/v1/users/me/password` | Change Password | cookie required |
 | POST | `/api/v1/predictions` | Predict | public |
+| POST | `/api/v1/predictions/explain` | Explain | public |
 | POST | `/api/v1/assessments` | Save Assessment | cookie required |
 | GET | `/api/v1/assessments` | List Assessments | cookie required |
 | DELETE | `/api/v1/assessments` | Delete All | cookie required |
@@ -56,6 +57,22 @@ Run the backend and open `/docs` for the interactive version (disabled when `APP
 ### Credentials
 - `email`: string, maxLength=254 (required)
 - `password`: string, maxLength=128 (required)
+
+### ExplainFactor
+- `feature`: string (required)
+- `value`: any (required)
+- `typical`: any (required)
+- `effect`: number (required)
+
+### ExplainOut
+- `category`: one of ['lower', 'moderate', 'higher'] (required)
+- `probability`: any (required)
+- `probability_display_supported`: boolean (required)
+- `threshold`: number (required)
+- `model_version`: string (required)
+- `disclaimer`: string (required)
+- `factors`: array (required)
+- `method`: string (required)
 
 ### PasswordChangeIn
 - `current_password`: string, maxLength=128 (required)

@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { HEALTH_OK, ME, renderAt } from '../test/fixtures'
+import { EXPLAIN_ROUTE, HEALTH_OK, ME, renderAt } from '../test/fixtures'
 import { mockFetch } from '../test/mockApi'
 
 const PRED = (category: string, probability: number | null = null) => ({
@@ -66,14 +66,13 @@ describe('assessment form', () => {
     const { calls } = mockFetch({
       'GET /users/me': ME,
       'GET /health': HEALTH_OK,
-      'POST /predictions': PRED('higher'),
+      'POST /predictions': PRED('higher', 0.131),
+      'POST /predictions/explain': EXPLAIN_ROUTE,
     })
     renderAt('/assess')
     const u = await fill()
     await u.click(screen.getByRole('button', { name: /get result without saving/i }))
-    expect(
-      await screen.findByRole('heading', { name: /higher than typical in the training data/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Higher stroke risk' })).toBeInTheDocument()
     expect(screen.getByText(/this result was not saved/i)).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'POST /assessments')).toBe(false)
     expect(calls.find((c) => c.key === 'POST /predictions')?.body).toMatchObject({
@@ -88,7 +87,8 @@ describe('assessment form', () => {
     const { calls } = mockFetch({
       'GET /users/me': ME,
       'GET /health': HEALTH_OK,
-      'POST /assessments': { status: 201, body: { ...PRED('lower').body, id: 5 } },
+      'POST /assessments': { status: 201, body: { ...PRED('lower', 0.01).body, id: 5 } },
+      'POST /predictions/explain': EXPLAIN_ROUTE,
     })
     renderAt('/assess')
     const u = await fill()

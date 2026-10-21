@@ -22,7 +22,7 @@ Browser (React 18 + TypeScript + Vite)            FastAPI backend (Python)      
 ## Key decisions
 - **One source of truth for predictions.** Both `/predictions` and `/assessments` call the same saved scikit-learn pipeline through `ml.predict`. Nothing is hard-coded or randomised.
 - **Fail safe.** If artifacts are missing, were trained with a different scikit-learn minor version, or cannot be loaded, the model endpoints return 503 with a plain message and the UI shows a "model not trained yet" state.
-- **Stateless prediction is really stateless.** `/predictions` stores nothing. The frontend passes the result to the result page through router state, so an unsaved result lives only in memory and is lost on refresh.
+- **Stateless prediction is really stateless.** `/predictions` and `/predictions/explain` store nothing. The frontend passes the result to the result page through router state, so an unsaved result lives only in memory and is lost on refresh.
 - **Auth.** Argon2 password hashes. A 30-minute JWT in an HttpOnly, SameSite=Lax cookie (Secure when `APP_ENV=production`). There is no refresh token, so a session simply expires. Authorization is enforced on the server for every private route, and another user's record returns 404.
 - **Database.** SQLAlchemy 2 models use no SQLite-only features, so they should port to PostgreSQL. Tables are created with `create_all` at startup for development. Alembic migrations are **not** set up; add them before any real deployment.
 - **Frontend loading.** Chart-heavy pages (Dashboard, Analytics) are lazy-loaded so the landing page stays small.

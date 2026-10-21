@@ -32,3 +32,53 @@ export const SMOKING_LABEL: Record<AssessmentInput['smoking_status'], string> = 
   smokes: 'Currently smokes',
   Unknown: 'Unknown',
 }
+
+// ---- Plain two-state risk wording shown to users ----
+export type RiskLevel = 'higher' | 'lower'
+/** The model has three internal bands. Users see two: at or above the threshold is higher, anything below is lower. */
+export const riskLevel = (c: Category): RiskLevel => (c === 'higher' ? 'higher' : 'lower')
+export const RISK_LABEL: Record<RiskLevel, string> = {
+  higher: 'Higher stroke risk',
+  lower: 'Lower stroke risk',
+}
+
+/** Percent text that never rounds a small risk to a misleading "0%". */
+export function formatPercent(p: number): string {
+  const pct = p * 100
+  if (pct < 0.1) return 'under 0.1%'
+  return pct < 10 ? `${pct.toFixed(1)}%` : `${Math.round(pct)}%`
+}
+
+export const FEATURE_LABEL: Record<string, string> = {
+  age: 'Age',
+  gender: 'Gender',
+  hypertension: 'High blood pressure',
+  heart_disease: 'Heart disease',
+  ever_married: 'Ever married',
+  work_type: 'Work type',
+  Residence_type: 'Residence type',
+  avg_glucose_level: 'Average glucose',
+  bmi: 'BMI',
+  smoking_status: 'Smoking',
+}
+
+/** Human-readable value for a feature, with units. */
+export function describeValue(feature: string, value: number | string): string {
+  switch (feature) {
+    case 'age':
+      return `${value} years`
+    case 'avg_glucose_level':
+      return `${Number(value).toFixed(0)} mg/dL`
+    case 'bmi':
+      return `${Number(value).toFixed(1)} kg/m²`
+    case 'hypertension':
+    case 'heart_disease':
+      return Number(value) === 1 ? 'Yes' : 'No'
+    case 'work_type':
+      return WORK_LABEL[value as AssessmentInput['work_type']] ?? String(value)
+    case 'smoking_status':
+      return SMOKING_LABEL[value as AssessmentInput['smoking_status']] ?? String(value)
+    default:
+      return String(value)
+  }
+}

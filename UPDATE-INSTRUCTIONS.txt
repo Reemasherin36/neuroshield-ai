@@ -1,0 +1,11 @@
+HOW TO APPLY THIS UPDATE TO YOUR EXISTING neuroshield-ai-final FOLDER
+
+1. Stop both servers (Ctrl+C in each terminal).
+2. Unzip this file over your project folder and choose "Replace" when asked.
+   (It only contains changed files. Your .env, data/, artifacts/, .venv and node_modules are not touched.)
+3. Delete this obsolete file:  frontend\src\components\ModelBand.tsx   (harmless if you forget)
+4. In the VS Code terminal (venv active):   python -m ml.summarize
+   (creates artifacts\reference_profile.json, needed for the "what is driving your result" chart. No retraining.)
+5. Start the backend again:   .\scripts\run-backend.ps1
+6. Start the frontend again:  .\scripts\run-frontend.ps1   (use Set-ExecutionPolicy -Scope Process Bypass first in each new terminal)
+7. Save your work:  git add -A  then  git commit -m "Clear higher/lower result, personal analysis"

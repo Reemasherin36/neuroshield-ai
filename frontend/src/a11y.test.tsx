@@ -5,8 +5,8 @@ import axe from 'axe-core'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { ResultView } from './components/ResultView'
-import { HEALTH_OK, INPUT, ME, METADATA, METRICS, assessment, renderAt } from './test/fixtures'
-import { mockFetch, notTrained, signedOut, type Routes } from './test/mockApi'
+import { EXPLAIN_ROUTE, HEALTH_OK, INPUT, ME, METADATA, METRICS, assessment, renderAt } from './test/fixtures'
+import { mockFetch, signedOut, type Routes } from './test/mockApi'
 
 async function scan(container: HTMLElement) {
   const results = await axe.run(container, {
@@ -26,14 +26,6 @@ const page = (items: ReturnType<typeof assessment>[], total = items.length, limi
   status: 200,
   body: { items, total, limit, offset: 0 },
 })
-const FI = {
-  status: 200,
-  body: {
-    method: 'permutation importance',
-    importances: [{ feature: 'age', mean: 0.19, std: 0.01 }],
-    limitations: ['Not causal.'],
-  },
-}
 const authed: Routes = { 'GET /users/me': ME, 'GET /health': HEALTH_OK }
 
 async function check(path: string, routes: Routes, ready: RegExp | { name: RegExp; level?: number }) {
@@ -46,10 +38,7 @@ async function check(path: string, routes: Routes, ready: RegExp | { name: RegEx
 }
 
 describe('axe: no violations on any page', () => {
-  it('landing (model not trained)', () =>
-    check('/', { ...signedOut, ...notTrained }, { name: /explore stroke risk factors/i, level: 1 }))
-  it('landing (with real metrics)', () =>
-    check('/', { ...signedOut, 'GET /model/metrics': { status: 200, body: METRICS } }, /^80?\.?|82\.0%/))
+  it('landing', () => check('/', { ...signedOut }, { name: /higher or lower/i, level: 1 }))
   it('login', () => check('/login', signedOut, { name: /^sign in$/i }))
   it('register', () => check('/register', signedOut, { name: /create your account/i }))
   it('404', () => check('/nope', signedOut, { name: /page not found/i }))
@@ -99,23 +88,31 @@ describe('axe: no violations on any page', () => {
         ...authed,
         'GET /assessments/4': { status: 200, body: assessment(4, 'higher') },
         'GET /model/metrics': { status: 200, body: METRICS },
+        'POST /predictions/explain': EXPLAIN_ROUTE,
       },
-      { name: /higher than typical/i },
+      /pushing your estimate up/i,
     ))
-  it('analytics', () =>
+  it('analytics (personal analysis)', () =>
     check(
       '/analytics',
       {
         ...authed,
-        'GET /model/metrics': { status: 200, body: METRICS },
-        'GET /model/feature-importance': FI,
+        'GET /assessments?limit=1&offset=0': page([assessment(3, 'higher')], 1, 1),
+        'POST /predictions/explain': EXPLAIN_ROUTE,
       },
-      { name: /model analytics/i },
+      /pushing your estimate up/i,
+    ))
+  it('analytics (nothing saved yet)', () =>
+    check(
+      '/analytics',
+      { ...authed, 'GET /assessments?limit=1&offset=0': page([], 0, 1) },
+      /no analysis yet/i,
     ))
   it('settings', () => check('/settings', authed, { name: /profile and settings/i }))
 
   it('result (each band)', async () => {
     for (const category of ['lower', 'moderate', 'higher'] as const) {
+      mockFetch({ 'POST /predictions/explain': EXPLAIN_ROUTE })
       const { container, unmount } = render(
         <MemoryRouter>
           <ResultView
@@ -130,13 +127,14 @@ describe('axe: no violations on any page', () => {
           />
         </MemoryRouter>,
       )
+      await screen.findByText(/pushing your estimate up/i)
       expect(await scan(container)).toEqual([])
       unmount()
     }
   })
 
   it('every page has exactly one main landmark with a skip link target', async () => {
-    mockFetch({ ...signedOut, ...notTrained })
+    mockFetch({ ...signedOut })
     const { container } = renderAt('/')
     await screen.findByRole('heading', { level: 1 })
     await waitFor(() => expect(container.querySelectorAll('main#main').length).toBe(1))

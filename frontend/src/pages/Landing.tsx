@@ -1,12 +1,12 @@
 import {
   Activity,
   BarChart3,
+  Cigarette,
   ClipboardList,
   Cpu,
   FileText,
-  Stethoscope,
-  Cigarette,
   Siren,
+  Stethoscope,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -19,7 +19,6 @@ import {
   PressureGaugeIcon,
   ShieldNodesIcon,
 } from '../components/icons'
-import { ModelBand } from '../components/ModelBand'
 
 function Chip({ className, icon, label }: { className: string; icon: ReactNode; label: string }) {
   return (
@@ -42,11 +41,11 @@ function Hero() {
             <Activity className="h-3.5 w-3.5" aria-hidden="true" /> Educational prototype
           </span>
           <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            Explore stroke risk factors with a model you can inspect
+            Find out whether your stroke risk looks higher or lower
           </h1>
           <p className="mt-5 max-w-xl text-lg text-navy-100">
-            NeuroShield AI is a student project that shows how a risk model is built, tested and explained,
-            using public data and open methods.
+            Answer ten quick questions about your health and lifestyle. You get a clear higher or lower
+            result, an estimated percentage, and the answers that push it up or down.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/assess" className="btn bg-white text-navy-900 hover:bg-navy-50">
@@ -85,13 +84,11 @@ function Intro() {
       <div>
         <h2 className="text-2xl font-bold text-navy-900 sm:text-3xl">What is NeuroShield AI?</h2>
         <p className="mt-4 text-ink-muted">
-          It is a research-only web app. You enter a few health and lifestyle details, a machine learning
-          model trained on a public dataset produces a result, and the app explains what that result does and
-          does not mean.
+          NeuroShield AI estimates whether your risk of stroke looks higher or lower than most people&apos;s,
+          using ten details such as your age, blood pressure history, glucose level and smoking status.
         </p>
         <p className="mt-3 text-ink-muted">
-          It is built to be transparent: the training data limits, the evaluation numbers and the weaknesses
-          of the model are all shown in the open.
+          It then shows which of your answers matter most, so you know what to talk through with a doctor.
         </p>
       </div>
       <div className="card flex items-center justify-center bg-gradient-to-br from-navy-50 to-teal-50 p-6">
@@ -105,17 +102,17 @@ const STEPS = [
   {
     icon: ClipboardList,
     title: 'Enter details',
-    text: 'Ten simple inputs such as age, glucose level and smoking status.',
+    text: 'Ten simple answers such as age, glucose level and smoking status.',
   },
   {
     icon: Cpu,
-    title: 'Model analyses',
-    text: 'A trained model compares your inputs with patterns in its training data.',
+    title: 'Your risk is estimated',
+    text: 'Your answers are compared with patterns from thousands of people in a public health dataset.',
   },
   {
     icon: FileText,
-    title: 'Understand the result',
-    text: 'See a calm, plain-language band with its uncertainty explained.',
+    title: 'See your result',
+    text: 'A clear higher or lower stroke risk result, with a percentage and the factors behind it.',
   },
   {
     icon: Stethoscope,
@@ -155,33 +152,29 @@ function HowItWorks() {
 const FEATURES = [
   {
     icon: HeartPulseIcon,
-    title: 'Heart and circulation inputs',
+    title: 'Heart and circulation',
     text: 'Records whether heart disease has been diagnosed, alongside age.',
   },
   {
     icon: GlucoseDropIcon,
     title: 'Glucose and BMI',
-    text: 'Average glucose (mg/dL) and BMI (kg/m²) with plausible-range checks.',
+    text: 'Average glucose (mg/dL) and BMI (kg/m²), with checks that the values make sense.',
   },
   {
     icon: PressureGaugeIcon,
     title: 'Blood pressure history',
-    text: 'A simple yes/no for diagnosed hypertension, as in the training data.',
+    text: 'A simple yes or no for diagnosed high blood pressure.',
   },
+  { icon: LifestyleIcon, title: 'Lifestyle context', text: 'Smoking status, work type and residence type.' },
   {
-    icon: LifestyleIcon,
-    title: 'Lifestyle context',
-    text: 'Smoking status, work type and residence type, as available in the dataset.',
+    icon: BarChart3,
+    title: 'See what drives your result',
+    text: 'A chart shows which of your answers push your estimate up or down.',
   },
   {
     icon: ShieldNodesIcon,
-    title: 'Consent before saving',
-    text: 'You can get a result without saving, and delete saved results at any time.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Transparent evaluation',
-    text: 'Metrics, calibration and limitations come from a real, documented training run.',
+    title: 'You control your data',
+    text: 'Get a result without saving, or save it with your consent and delete it any time.',
   },
 ]
 
@@ -256,31 +249,41 @@ function RiskFactors() {
   )
 }
 
-function Goals() {
+const DETAILS = [
+  'Age',
+  'Gender',
+  'High blood pressure',
+  'Heart disease',
+  'Ever married',
+  'Work type',
+  'Residence type',
+  'Average glucose level',
+  'BMI',
+  'Smoking status',
+]
+
+function HowIdentified() {
   return (
-    <section className="section">
-      <h2 className="text-2xl font-bold text-navy-900 sm:text-3xl">Why we built this</h2>
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <p className="text-ink-muted">
-          NeuroShield AI started as a student project to practise building a complete machine learning
-          application: data checks, a leakage-free training pipeline, honest evaluation, a secure backend and
-          a clear interface.
-        </p>
-        <ul className="space-y-2 text-sm text-ink-muted">
-          <li className="card p-4">
-            <strong className="text-navy-900">Project goal 1.</strong> Show every step of the model openly,
-            including its weaknesses.
+    <section id="how-identified" className="section">
+      <h2 className="text-2xl font-bold text-navy-900 sm:text-3xl">How your risk is identified</h2>
+      <p className="mt-4 max-w-3xl text-ink-muted">
+        Your result is based on these ten details. Your answers are compared with patterns from more than
+        5,000 people in a public health dataset, to estimate whether your stroke risk looks higher or lower.
+        Afterwards you can see which of your answers pushed the estimate up or down.
+      </p>
+      <ul className="mt-6 flex flex-wrap gap-3">
+        {DETAILS.map((d) => (
+          <li
+            key={d}
+            className="rounded-pill border border-navy-200 bg-white px-4 py-2 text-sm font-medium text-navy-900"
+          >
+            {d}
           </li>
-          <li className="card p-4">
-            <strong className="text-navy-900">Project goal 2.</strong> Keep personal data minimal and under
-            the user's control.
-          </li>
-          <li className="card p-4">
-            <strong className="text-navy-900">Project goal 3.</strong> Teach, never reassure and never
-            diagnose.
-          </li>
-        </ul>
-      </div>
+        ))}
+      </ul>
+      <Link to="/assess" className="btn-primary mt-8">
+        Check your risk
+      </Link>
     </section>
   )
 }
@@ -288,19 +291,19 @@ function Goals() {
 const FAQ = [
   [
     'What is NeuroShield AI?',
-    'A research-only student project that applies a machine learning model to a public dataset and explains the result.',
+    'A free educational tool that estimates whether your stroke risk looks higher or lower, from ten health and lifestyle details.',
   ],
   [
     'What is it not?',
-    'It is not a diagnostic tool or a medical device. It cannot diagnose a stroke or rule one out, and a low result is never a reason to ignore symptoms.',
+    'It is not a diagnostic tool or a medical device. It cannot diagnose a stroke or rule one out, and a lower result is never a reason to ignore symptoms.',
   ],
   [
     'How reliable are the results?',
-    'Limited. The training data has few stroke cases and unclear provenance, and the evaluation shows many false alarms. See the methodology page for the real numbers.',
+    'Limited. It learned from a small public dataset with few stroke cases, and many people it flags higher never have a stroke. Treat it as a prompt to talk to a doctor.',
   ],
   [
     'Is my data stored?',
-    'Only if you tick the consent box when submitting. You can also get a result without saving. Saved assessments can be deleted one by one or all at once.',
+    'Only if you tick the consent box when you submit. You can also get a result without saving. Saved assessments can be deleted one by one or all at once.',
   ],
   [
     'How is my data handled?',
@@ -367,8 +370,7 @@ export default function Landing() {
       <HowItWorks />
       <Features />
       <RiskFactors />
-      <ModelBand />
-      <Goals />
+      <HowIdentified />
       <Faq />
       <Emergency />
     </>

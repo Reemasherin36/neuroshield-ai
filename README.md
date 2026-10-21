@@ -7,7 +7,7 @@ An **educational, research-only** stroke risk exploration web app: a React front
 **Status:** all six build phases are complete. It has been tested on Linux only. **It has not been run on Windows or in a real browser**, so please follow [docs/qa_checklist.md](docs/qa_checklist.md) after your first run.
 
 ## What you get
-Landing page, sign in / register, dashboard, new assessment (with consent to save, or "get result without saving"), result page, history, analytics (real metrics from your own training run), settings (password change, delete data, delete account), methodology page and a 404 page.
+Landing page, sign in / register, dashboard, new assessment (with consent to save, or "get result without saving"), a result page that says plainly whether your stroke risk looks higher or lower with an estimated percentage and a chart of which of your answers drive it, a personal risk analysis page, history, settings (password change, delete data, delete account), a methodology page for the technically curious, and a 404 page.
 
 ---
 
@@ -99,7 +99,7 @@ pytest                        # backend + ML tests
 cd frontend; npm run lint; npm test; cd ..
 python scripts\contrast_check.py   # colour contrast audit
 ```
-Reference results from the development run: `pytest` (backend + ML) 60 passed, frontend `npm test` 62 passed, contrast audit 40/40 pairs pass. Tests that need a trained model are skipped (not faked) if `artifacts\` is empty.
+Reference results from the development run: `pytest` (backend + ML) 67 passed, frontend `npm test` 73 passed, contrast audit 42/42 pairs pass. Tests that need a trained model are skipped (not faked) if `artifacts\` is empty.
 
 ### 10. Troubleshooting
 | Problem | Fix |
@@ -110,6 +110,7 @@ Reference results from the development run: `pytest` (backend + ML) 60 passed, f
 | `ModuleNotFoundError` | The venv is not active (no `(.venv)` in the prompt) or step 4 was skipped. Activate it and run `pip install -r backend\requirements-dev.txt` |
 | `Address already in use` / port 8000 or 5173 busy | Find it with `netstat -ano \| findstr :8000`, then `taskkill /PID <number> /F`. Or close the old terminal. The frontend needs port 5173 exactly |
 | Browser console shows a **CORS error** or sign-in does nothing | Open the app at `http://localhost:5173` (not `127.0.0.1`), keep the backend running, and make sure `FRONTEND_ORIGIN` in `.env` is `http://localhost:5173`. Restart the backend after editing `.env` |
+| Result page says **"Explanations need one extra file"** | Run `python -m ml.summarize` (the venv must be active), then restart the backend. `.\scripts\train.ps1` also does this |
 | App says **"Model not trained yet"** / health shows `model_loaded:false` | Put the CSV in `data\`, run `.\scripts\train.ps1`, then **restart the backend** |
 | Health message says the model was trained with a different scikit-learn version | Run `.\scripts\train.ps1` again in this environment |
 | `SETUP REQUIRED: No CSV found in data/` | The file is missing or not in `data\` (not a subfolder) |

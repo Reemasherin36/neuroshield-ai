@@ -35,6 +35,18 @@ class PredictionOut(BaseModel):
     disclaimer: str
 
 
+class ExplainFactor(BaseModel):
+    feature: str
+    value: float | str
+    typical: float | str
+    effect: float  # change in estimated probability versus a typical person (e.g. 0.03 = +3 percentage points)
+
+
+class ExplainOut(PredictionOut):
+    factors: list[ExplainFactor]
+    method: str
+
+
 class AssessmentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int

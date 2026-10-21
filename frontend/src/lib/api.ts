@@ -153,6 +153,17 @@ export interface ModelMetadata {
   dataset_summary: DatasetSummary | null
 }
 
+export interface ExplainFactor {
+  feature: string
+  value: number | string
+  typical: number | string
+  effect: number
+}
+export interface Explanation extends Prediction {
+  factors: ExplainFactor[]
+  method: string
+}
+
 // ---- Endpoints ----
 export const api = {
   health: () => request<{ status: string; model_loaded: boolean; model_message: string | null }>('/health'),
@@ -170,6 +181,9 @@ export const api = {
     remove: (password: string) => request<void>('/users/me', { method: 'DELETE', json: { password } }),
   },
   predict: (inputs: AssessmentInput) => request<Prediction>('/predictions', { method: 'POST', json: inputs }),
+  /** Stateless: the result plus how much each answer moves the estimate. Nothing is stored. */
+  explain: (inputs: AssessmentInput) =>
+    request<Explanation>('/predictions/explain', { method: 'POST', json: inputs }),
   assessments: {
     save: (inputs: AssessmentInput, consent: boolean) =>
       request<Prediction & { id: number }>('/assessments', { method: 'POST', json: { inputs, consent } }),

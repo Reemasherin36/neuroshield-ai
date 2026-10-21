@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import App from './App'
 import { AuthProvider } from './lib/auth'
-import { mockFetch, notTrained, signedOut } from './test/mockApi'
+import { mockFetch, signedOut } from './test/mockApi'
 
 const renderAt = (path: string) =>
   render(
@@ -15,55 +15,45 @@ const renderAt = (path: string) =>
     </MemoryRouter>,
   )
 
-const METRICS = {
-  recall: 0.8,
-  precision: 0.1,
-  f1: 0.2,
-  specificity: 0.7,
-  roc_auc: 0.82,
-  pr_auc: 0.24,
-  brier: 0.04,
-  confusion_matrix: { tn: 1, fp: 1, fn: 1, tp: 1 },
-  n_test: 1022,
-  n_test_positive: 50,
-  threshold: 0.07,
-  model_name: 'm',
-  model_version: '0.1.0',
-  probability_display_supported: true,
-}
-
 describe('landing page', () => {
-  it('renders key sections and the safety content', async () => {
-    mockFetch({ ...signedOut, ...notTrained })
+  it('renders the user-facing sections and the safety content', async () => {
+    mockFetch({ ...signedOut })
     renderAt('/')
-    expect(
-      await screen.findByRole('heading', { level: 1, name: /explore stroke risk factors/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /higher or lower/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /how it works/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /how your risk is identified/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /if you suspect a stroke, act now/i })).toBeInTheDocument()
     expect(screen.getAllByText(/educational prototype, not medical advice/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/not a diagnostic tool/i).length).toBeGreaterThan(0)
   })
 
-  it('shows the train-the-model state when the model is missing, never fake numbers', async () => {
-    mockFetch({ ...signedOut, ...notTrained })
+  it('lists the ten details the result is based on', async () => {
+    mockFetch({ ...signedOut })
     renderAt('/')
-    expect(await screen.findByText(/train the model to see results/i)).toBeInTheDocument()
-    expect(screen.queryByText(/ROC-AUC/)).not.toBeInTheDocument()
+    const section = (await screen.findByRole('heading', { name: /how your risk is identified/i })).closest(
+      'section',
+    ) as HTMLElement
+    for (const d of [
+      'Age',
+      'High blood pressure',
+      'Heart disease',
+      'Average glucose level',
+      'BMI',
+      'Smoking status',
+    ]) {
+      expect(within(section).getByText(d)).toBeInTheDocument()
+    }
+    expect(within(section).getAllByRole('listitem')).toHaveLength(10)
   })
 
-  it('shows real metrics from the API when available', async () => {
-    mockFetch({ ...signedOut, 'GET /model/metrics': { status: 200, body: METRICS } })
+  it('has no model-quality material and makes no model-metrics request', async () => {
+    const { calls } = mockFetch({ ...signedOut })
     renderAt('/')
-    expect(await screen.findByText('80.0%')).toBeInTheDocument()
-    expect(screen.getByText('0.82')).toBeInTheDocument()
-    expect(screen.getByText(/1022 people, 50 with a recorded stroke/i)).toBeInTheDocument()
-  })
-
-  it('shows an unavailable state when the backend is unreachable', async () => {
-    mockFetch({ ...signedOut }) // /model/metrics is unmocked -> fetch throws -> network error
-    renderAt('/')
-    expect(await screen.findByText(/results unavailable/i)).toBeInTheDocument()
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByText(/model transparency/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/ROC-AUC|PR-AUC|precision|recall/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/why we built this|student project/i)).not.toBeInTheDocument()
+    expect(calls.some((c) => c.key.includes('/model/'))).toBe(false)
   })
 })
 

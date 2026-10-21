@@ -6,10 +6,10 @@ import { ModelNotTrainedArt, NoAssessmentsArt } from '../components/EmptyStates'
 import { api, type Assessment } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CHART } from '../lib/chartTheme'
-import { CATEGORY_LEVEL, CATEGORY_SHORT, formatDate, isCategory, type Category } from '../lib/format'
+import { RISK_LABEL, formatDate, isCategory, riskLevel, type RiskLevel } from '../lib/format'
 
 type Data = { items: Assessment[]; total: number }
-const COLORS: Record<Category, string> = { lower: '#5ad6c8', moderate: '#38d0ec', higher: '#3c629a' }
+const COLORS: Record<RiskLevel, string> = { lower: '#5ad6c8', higher: '#3c629a' }
 
 function StatCard({
   icon: Icon,
@@ -50,10 +50,11 @@ export default function Dashboard() {
   }, [])
 
   const items = data && data !== 'error' ? data.items : []
-  const counts: Record<Category, number> = { lower: 0, moderate: 0, higher: 0 }
+  const counts: Record<RiskLevel, number> = { higher: 0, lower: 0 }
   items.forEach((a) => {
-    if (isCategory(a.category)) counts[a.category] += 1
+    if (isCategory(a.category)) counts[riskLevel(a.category)] += 1
   })
+  const LEVELS: RiskLevel[] = ['higher', 'lower']
   const spark = [...items]
     .slice(0, 10)
     .reverse()
@@ -61,7 +62,7 @@ export default function Dashboard() {
       n: i + 1,
       date: formatDate(a.created_at),
       category: a.category,
-      level: isCategory(a.category) ? CATEGORY_LEVEL[a.category] : 0,
+      level: isCategory(a.category) && riskLevel(a.category) === 'higher' ? 2 : 1,
     }))
   const modelMissing = model !== null && model !== 'offline' && !model.loaded
 
@@ -139,14 +140,14 @@ export default function Dashboard() {
               <div className="grid gap-4 lg:grid-cols-2">
                 <section className="card p-6" aria-labelledby="dist-title">
                   <h2 id="dist-title" className="font-semibold text-navy-900">
-                    Your saved results by band
+                    Your saved results
                   </h2>
                   <div
                     className="mt-4 flex h-4 overflow-hidden rounded-pill bg-navy-50"
                     role="img"
-                    aria-label={`Lower ${counts.lower}, moderate ${counts.moderate}, higher ${counts.higher}`}
+                    aria-label={`Higher stroke risk ${counts.higher}, lower stroke risk ${counts.lower}`}
                   >
-                    {(Object.keys(counts) as Category[]).map(
+                    {LEVELS.map(
                       (c) =>
                         counts[c] > 0 && (
                           <div
@@ -159,15 +160,15 @@ export default function Dashboard() {
                         ),
                     )}
                   </div>
-                  <ul className="mt-4 grid grid-cols-3 gap-2 text-sm">
-                    {(Object.keys(counts) as Category[]).map((c) => (
+                  <ul className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                    {LEVELS.map((c) => (
                       <li key={c}>
                         <span
                           className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full"
                           style={{ backgroundColor: COLORS[c] }}
                           aria-hidden="true"
                         />
-                        {CATEGORY_SHORT[c]}: <strong>{counts[c]}</strong>
+                        {RISK_LABEL[c]}: <strong>{counts[c]}</strong>
                       </li>
                     ))}
                   </ul>
@@ -179,7 +180,7 @@ export default function Dashboard() {
                 </section>
                 <section className="card p-6" aria-labelledby="trend-title">
                   <h2 id="trend-title" className="font-semibold text-navy-900">
-                    Recent bands over time
+                    Recent results over time
                   </h2>
                   <div className="mt-2 h-28">
                     <ResponsiveContainer width="100%" height="100%">
@@ -188,24 +189,21 @@ export default function Dashboard() {
                         <Tooltip
                           contentStyle={CHART.tooltip}
                           formatter={(_v, _n, p) => [
-                            CATEGORY_SHORT[p.payload.category as Category] ?? '',
-                            'Band',
+                            p.payload.level === 2 ? RISK_LABEL.higher : RISK_LABEL.lower,
+                            'Result',
                           ]}
                           labelFormatter={(_l, p) => p?.[0]?.payload?.date ?? ''}
                         />
                         <Bar dataKey="level" radius={[6, 6, 0, 0]}>
                           {spark.map((s) => (
-                            <Cell
-                              key={s.n}
-                              fill={isCategory(s.category) ? COLORS[s.category] : CHART.muted}
-                            />
+                            <Cell key={s.n} fill={s.level === 2 ? COLORS.higher : COLORS.lower} />
                           ))}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                   <p className="text-xs text-ink-subtle">
-                    Oldest to newest, up to 10. Taller bar means a higher band.
+                    Oldest to newest, up to 10. A taller bar means a higher stroke risk result.
                   </p>
                 </section>
               </div>
@@ -224,7 +222,7 @@ export default function Dashboard() {
                     <li key={a.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                       <span className="text-ink-muted">{formatDate(a.created_at)}</span>
                       <span className="font-medium text-navy-900">
-                        {isCategory(a.category) ? CATEGORY_SHORT[a.category] : a.category}
+                        {isCategory(a.category) ? RISK_LABEL[riskLevel(a.category)] : a.category}
                       </span>
                       <Link to={`/history/${a.id}`} className="text-teal-700 underline">
                         View

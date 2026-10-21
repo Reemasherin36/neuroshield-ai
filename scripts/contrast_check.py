@@ -44,6 +44,8 @@ pairs = [  # (name, fg, bg, required)
     ("navy-200 on navy-950 (footer)", T["navy200"], T["navy950"], 4.5), ("navy-300 on navy-950 (footer small)", T["navy300"], T["navy950"], 4.5),
     ("navy-100 on navy-900 (model band)", T["navy100"], T["navy900"], 4.5), ("navy-200 on navy-900", T["navy200"], T["navy900"], 4.5),
     ("navy-200 on glass over navy-900", T["navy200"], over("#ffffff", 0.10, T["navy900"]), 4.5),
+    ("result headline: teal-800 on white", T["teal800"], T["white"], 4.5),
+    ("result headline: navy-700 on white", T["navy700"], T["white"], 4.5),
     ("cyan-300 on navy-900", T["cyan300"], T["navy900"], 4.5), ("navy-900 on white (hero button)", T["navy900"], T["white"], 4.5),
 ]
 # Placement-aware hero checks. Left column text sits on gradient stops 1-3, with the orb behind stops 1-2.

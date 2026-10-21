@@ -4,7 +4,7 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import { NoAssessmentsArt } from '../components/EmptyStates'
 import { errorText } from '../components/StateNotice'
 import { api, type AssessmentPage } from '../lib/api'
-import { CATEGORY_LABEL, formatDate, isCategory } from '../lib/format'
+import { RISK_LABEL, formatDate, isCategory, riskLevel } from '../lib/format'
 
 const PAGE = 10
 
@@ -91,7 +91,7 @@ export default function History() {
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
                 <div>
                   <p className="font-medium text-navy-900">
-                    {isCategory(a.category) ? CATEGORY_LABEL[a.category] : a.category}
+                    {isCategory(a.category) ? RISK_LABEL[riskLevel(a.category)] : a.category}
                   </p>
                   <p className="text-xs text-ink-subtle">
                     {formatDate(a.created_at)} · model {a.model_version}

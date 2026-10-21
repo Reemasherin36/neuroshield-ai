@@ -8,8 +8,8 @@ export function Footer() {
         <div>
           <Logo tone="dark" />
           <p className="mt-4 max-w-xs text-sm text-navy-200">
-            An educational student project exploring how a machine learning model can be built, evaluated and
-            explained openly.
+            An educational tool that estimates whether your stroke risk looks higher or lower, from ten health
+            and lifestyle details.
           </p>
         </div>
         <nav aria-label="Footer">

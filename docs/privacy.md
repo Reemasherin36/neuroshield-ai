@@ -7,7 +7,7 @@
 | Password hash (Argon2) | At registration or password change | `users.password_hash` (the password is never stored) |
 | Saved assessment: the ten inputs, score, threshold, band, model version, consent timestamp, created time | Only when you tick the consent box and choose "Save and get result" | `assessments` |
 
-Nothing is stored for "Get result without saving". The frontend keeps that result only in memory.
+Nothing is stored for "Get result without saving". The frontend keeps that result only in memory. The breakdown of what drives a result (`POST /predictions/explain`) is also stateless: the server scores the answers and returns the result without storing them.
 
 ## What is not stored or sent
 - No analytics, advertising, or third-party scripts, fonts, or images. The built frontend makes no requests to other hosts, and the backend makes none either.

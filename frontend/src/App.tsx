@@ -6,18 +6,18 @@ import { PublicLayout } from './components/PublicLayout'
 import { ScrollToHash } from './components/ScrollToHash'
 import Assess from './pages/Assess'
 import History from './pages/History'
-import HistoryDetail from './pages/HistoryDetail'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Methodology from './pages/Methodology'
 import NotFound from './pages/NotFound'
 import Register from './pages/Register'
-import Result from './pages/Result'
 import Settings from './pages/Settings'
 
-// Chart-heavy pages are loaded on demand so the landing page stays light.
+// Pages that draw charts are loaded on demand so the landing page stays light.
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Analytics = lazy(() => import('./pages/Analytics'))
+const Result = lazy(() => import('./pages/Result'))
+const HistoryDetail = lazy(() => import('./pages/HistoryDetail'))
 
 export default function App() {
   return (

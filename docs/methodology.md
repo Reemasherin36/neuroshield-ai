@@ -24,7 +24,9 @@ Outputs: `docs/eda.md`, `docs/model_selection.md` (both generated from real numb
 The brief allowed class weights or SMOTE inside cross-validation. Class weights were used because they keep the pipeline simple and avoid synthetic rows. `imbalanced-learn` is installed but unused.
 
 ## Display rules derived from evaluation
-- The UI shows a **band** (lower / moderate / higher than typical in the training data) relative to the threshold: lower is below half the threshold, moderate is up to the threshold, higher is at or above it. The 0.5 fraction is an arbitrary presentation choice.
-- A percentage is shown only if the test set passes a documented check (expected calibration error <= 0.03 and Brier score better than the prevalence baseline). With about 50 positive cases this check is noisy, so any percentage is labelled approximate.
+- Users see **two levels**, not the model's three internal bands. A score at or above the decision threshold is shown as **Higher stroke risk**. Anything below it (the internal "lower" and "moderate" bands) is shown as **Lower stroke risk**. The result page states the threshold in plain words.
+- The estimated percentage is shown only if the test set passes a documented check (expected calibration error <= 0.03 and Brier score better than the prevalence baseline). With about 50 positive cases this check is noisy, so the page calls the percentage an estimate. If the check fails, the verdict is still shown but the percentage is hidden.
+- **What is driving a result.** `POST /predictions/explain` re-scores the person once per feature, with that one answer replaced by the "typical" value (median for numbers, most common category) taken from the **training split** (`artifacts/reference_profile.json`, written by `python -m ml.summarize`). The change in the estimate is that answer's effect, in percentage points. Effects interact, so they do not add up exactly. This is a one-at-a-time what-if comparison, not a causal claim.
+- The what-if comparison reports what the model learned, which can disagree with medical knowledge. For example, in this dataset a higher BMI slightly *lowers* the estimate. The page therefore lists such answers under "Pushing your estimate down" with a warning that they must not be read as protective.
 
 See [limitations.md](limitations.md) for what these results do and do not support.

@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../App'
 import { AuthProvider } from '../lib/auth'
-import type { Assessment, AssessmentInput, ModelMetadata, ModelMetrics } from '../lib/api'
+import type { Assessment, AssessmentInput, Explanation, ModelMetadata, ModelMetrics } from '../lib/api'
 
 export const renderAt = (path: string) =>
   render(
@@ -93,3 +93,33 @@ export const METADATA: ModelMetadata = {
     },
   },
 }
+
+const f = (feature: string, value: number | string, typical: number | string, effect: number) => ({
+  feature,
+  value,
+  typical,
+  effect,
+})
+/** Real values returned by the backend for the INPUT profile, rounded. */
+export const EXPLAIN: Explanation = {
+  category: 'higher',
+  probability: 0.131,
+  probability_display_supported: true,
+  threshold: 0.0674,
+  model_version: '0.1.0',
+  disclaimer: 'x',
+  method: 'Each answer is swapped, one at a time, for the typical value.',
+  factors: [
+    f('age', 67, 45, 0.1118),
+    f('avg_glucose_level', 228.7, 91.665, 0.0524),
+    f('heart_disease', 1, 0, 0.0096),
+    f('smoking_status', 'formerly smoked', 'never smoked', 0.0087),
+    f('bmi', 36.6, 28, -0.0064),
+    f('hypertension', 0, 0, 0),
+    f('gender', 'Male', 'Female', 0),
+    f('ever_married', 'Yes', 'Yes', 0),
+    f('work_type', 'Private', 'Private', 0),
+    f('Residence_type', 'Urban', 'Rural', 0),
+  ],
+}
+export const EXPLAIN_ROUTE = { status: 200, body: EXPLAIN }

@@ -13,6 +13,7 @@ This is an **educational, research-only prototype**. It is not a medical device,
 - One train/validation/test split, one dataset, no external validation.
 - Feature importance describes the model, not medicine, and is not causal.
 - The probability calibration check is rough at this sample size.
+- The "what is driving your result" chart is a one-at-a-time what-if comparison against a typical person from the training data. Effects overlap, are not causal, and can contradict medical knowledge (a higher BMI slightly lowers the estimate in this dataset). The page says so.
 
 ## Software
 - Local SQLite is not encrypted at rest. The login rate limiter is in memory. There is no email verification, password reset, or session revocation.
