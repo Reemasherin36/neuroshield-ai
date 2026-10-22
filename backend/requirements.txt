@@ -7,3 +7,4 @@ SQLAlchemy==2.1.5
 argon2-cffi==25.1.0
 joblib==1.6.0
 PyJWT==2.15.1
+psycopg[binary]==3.3.6

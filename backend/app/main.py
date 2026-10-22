@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -9,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app import models  # noqa: F401  (registers tables)
 from app.core.config import settings
 from app.core.errors import ApiError
+from app.core.spa import mount_frontend
 from app.db.session import Base, engine
 from app.routers import assessments, auth, health, model, predictions, users
 from app.services.model_service import model_service
@@ -55,7 +57,8 @@ async def limits_and_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Cache-Control"] = "no-store"
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
     return response
 
 
@@ -78,3 +81,7 @@ async def validation_exc(_: Request, exc: RequestValidationError):
 
 for r in (health.router, auth.router, users.router, predictions.router, assessments.router, model.router):
     app.include_router(r, prefix="/api/v1")
+
+# Registered last so it never shadows an API route. Enabled only when FRONTEND_DIST is set (production image).
+if settings.frontend_dist:
+    mount_frontend(app, Path(settings.frontend_dist))

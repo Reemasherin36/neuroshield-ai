@@ -3,7 +3,8 @@ import tempfile
 
 # Must be set before the app is imported so tests never touch a real database.
 _tmp = tempfile.mkdtemp()
-os.environ["DATABASE_URL"] = f"sqlite:///{_tmp}/test.db"
+# Set TEST_DATABASE_URL (a postgresql:// URL) to run the whole suite against PostgreSQL instead of SQLite.
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{_tmp}/test.db"
 os.environ["APP_ENV"] = "development"
 
 import pytest

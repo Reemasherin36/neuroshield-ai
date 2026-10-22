@@ -99,7 +99,7 @@ pytest                        # backend + ML tests
 cd frontend; npm run lint; npm test; cd ..
 python scripts\contrast_check.py   # colour contrast audit
 ```
-Reference results from the development run: `pytest` (backend + ML) 67 passed, frontend `npm test` 73 passed, contrast audit 42/42 pairs pass. Tests that need a trained model are skipped (not faked) if `artifacts\` is empty.
+Reference results from the development run: `pytest` (backend + ML) 77 passed, frontend `npm test` 73 passed, contrast audit 42/42 pairs pass. Tests that need a trained model are skipped (not faked) if `artifacts\` is empty.
 
 ### 10. Troubleshooting
 | Problem | Fix |
@@ -117,6 +117,9 @@ Reference results from the development run: `pytest` (backend + ML) 67 passed, f
 | `npm install` fails | Use Node LTS. Delete `frontend\node_modules`, run `npm cache clean --force`, retry. On a corporate network check the npm proxy settings |
 | Sign-in works but you are logged out after 30 minutes | By design: sessions are short and have no refresh token |
 | Signed out right after logging in on a deployed site | The cookie is Secure in production, so it needs HTTPS. See `docs\deployment_notes.md` |
+
+## Put it on GitHub and deploy it
+GitHub upload and a free demo deployment are explained step by step in [docs/deployment_notes.md](docs/deployment_notes.md). Short version: push the code to GitHub, put the small trained model files on a `deploy` branch, and create a Docker web service from that branch. The Dockerfile has not been built by its author, so expect small fixes on the first try.
 
 ## Project documentation
 [architecture](docs/architecture.md) · [API reference](docs/api.md) · [EDA](docs/eda.md) · [model selection](docs/model_selection.md) · [methodology](docs/methodology.md) · [limitations](docs/limitations.md) · [privacy](docs/privacy.md) · [security review](docs/security_review.md) · [accessibility](docs/accessibility.md) · [manual QA checklist](docs/qa_checklist.md) · [assets](docs/assets.md) · [deployment notes](docs/deployment_notes.md)
