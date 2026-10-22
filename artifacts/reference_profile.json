@@ -1,0 +1,16 @@
+{
+  "values": {
+    "age": 45.0,
+    "avg_glucose_level": 91.665,
+    "bmi": 28.0,
+    "hypertension": 0,
+    "heart_disease": 0,
+    "gender": "Female",
+    "ever_married": "Yes",
+    "work_type": "Private",
+    "Residence_type": "Rural",
+    "smoking_status": "never smoked"
+  },
+  "n": 3066,
+  "source": "median or most common value in the training split"
+}

@@ -1,0 +1,25 @@
+{
+  "rows": 5110,
+  "positives": 249,
+  "positive_rate": 0.0487279843444227,
+  "bmi_na_strings": 201,
+  "bmi_missing": 201,
+  "smoking_unknown": 1544,
+  "gender_other": 1,
+  "age_min": 0.08,
+  "age_max": 82.0,
+  "splits": {
+    "train": {
+      "rows": 3066,
+      "positives": 149
+    },
+    "validation": {
+      "rows": 1022,
+      "positives": 50
+    },
+    "test": {
+      "rows": 1022,
+      "positives": 50
+    }
+  }
+}

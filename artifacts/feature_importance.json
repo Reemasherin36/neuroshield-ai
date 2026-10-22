@@ -1,0 +1,55 @@
+{
+  "method": "permutation importance on validation set, scoring=average_precision, 20 repeats",
+  "importances": [
+    {
+      "feature": "age",
+      "mean": 0.18965991798080645,
+      "std": 0.016549517481103997
+    },
+    {
+      "feature": "bmi",
+      "mean": 0.0775384371177896,
+      "std": 0.02316477953040451
+    },
+    {
+      "feature": "avg_glucose_level",
+      "mean": 0.030473794646384333,
+      "std": 0.015383915472146717
+    },
+    {
+      "feature": "work_type",
+      "mean": 0.002740495420871997,
+      "std": 0.0021841325179465525
+    },
+    {
+      "feature": "gender",
+      "mean": 0.0011924245382827659,
+      "std": 0.0010898186815402548
+    },
+    {
+      "feature": "ever_married",
+      "mean": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "smoking_status",
+      "mean": -8.604988544930748e-05,
+      "std": 0.002077324242759206
+    },
+    {
+      "feature": "heart_disease",
+      "mean": -0.00290456680747721,
+      "std": 0.0014570574340285896
+    },
+    {
+      "feature": "hypertension",
+      "mean": -0.003379795066692254,
+      "std": 0.003517403207577371
+    },
+    {
+      "feature": "Residence_type",
+      "mean": -0.0036305851414905666,
+      "std": 0.0039003652216229845
+    }
+  ]
+}
